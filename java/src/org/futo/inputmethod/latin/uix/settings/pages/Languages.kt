@@ -85,7 +85,13 @@ data class LanguageItem(
     val languageName: String,
     val options: LanguageOptions,
     val layouts: List<Pair<InputMethodSubtype, String>>,
-    val inMultilingualBucket: Boolean
+    val inMultilingualBucket: Boolean,
+    /**
+     * Whether to show the importable resources (voice input model, dictionary, transformer)
+     * for this language. Languages backed by a self-contained engine (for example the fcitx5
+     * pinyin option) set this to false.
+     */
+    val showResources: Boolean = true
 )
 
 @Composable
@@ -241,27 +247,29 @@ fun LanguageSurface(
                     style = Typography.Heading.MediumMl
                 )
 
-                if (item.options.dictionary == null) {
-                    Tip(stringResource(R.string.language_settings_warning_language_has_no_dict))
-                } else {
-                    Spacer(modifier = Modifier.height(32.dp))
-                }
+                if (item.showResources) {
+                    if (item.options.dictionary == null) {
+                        Tip(stringResource(R.string.language_settings_warning_language_has_no_dict))
+                    } else {
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
 
-                LanguageConfigurable(
-                    kind = FileKind.VoiceInput,
-                    selection = item.options.voiceInputModel
-                        ?: stringResource(R.string.language_settings_resource_none)
-                ) { onConfigurableSelected(FileKind.VoiceInput) }
-                LanguageConfigurable(
-                    kind = FileKind.Dictionary,
-                    selection = item.options.dictionary
-                        ?: stringResource(R.string.language_settings_resource_none)
-                ) { onConfigurableSelected(FileKind.Dictionary) }
-                LanguageConfigurable(
-                    kind = FileKind.Transformer,
-                    selection = item.options.transformerModel
-                        ?: stringResource(R.string.language_settings_resource_none)
-                ) { onConfigurableSelected(FileKind.Transformer) }
+                    LanguageConfigurable(
+                        kind = FileKind.VoiceInput,
+                        selection = item.options.voiceInputModel
+                            ?: stringResource(R.string.language_settings_resource_none)
+                    ) { onConfigurableSelected(FileKind.VoiceInput) }
+                    LanguageConfigurable(
+                        kind = FileKind.Dictionary,
+                        selection = item.options.dictionary
+                            ?: stringResource(R.string.language_settings_resource_none)
+                    ) { onConfigurableSelected(FileKind.Dictionary) }
+                    LanguageConfigurable(
+                        kind = FileKind.Transformer,
+                        selection = item.options.transformerModel
+                            ?: stringResource(R.string.language_settings_resource_none)
+                    ) { onConfigurableSelected(FileKind.Transformer) }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -715,7 +723,8 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                     },
                     inMultilingualBucket = multilingualBucket.value.contains(
                         localeString
-                    )
+                    ),
+                    showResources = !Subtypes.isFcitx5Pinyin(subtypes.first())
                 ),
                 onLanguageRemoved = {
                     languageDeleteInfo.value = locale

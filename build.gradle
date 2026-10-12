@@ -337,6 +337,11 @@ android {
             java.srcDirs = ['common/src', 'java/src']
             manifest.srcFile 'java/AndroidManifest.xml'
             assets.srcDirs = ['java/assets']
+            // When building with the fcitx5/libime pinyin engine, package the native
+            // dependency libraries (<root>/lib/<abi>/*.so) alongside libfcitx5pinyin.so.
+            if (project.hasProperty('fcitx5PinyinRoot')) {
+                jniLibs.srcDirs += "${project.property('fcitx5PinyinRoot')}/lib"
+            }
         }
 
         playstore {
