@@ -5,10 +5,8 @@ import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,7 +25,6 @@ import org.futo.inputmethod.latin.SuggestedWords.SuggestedWordInfo
 import org.futo.inputmethod.latin.Subtypes.switchToNextLanguage
 import org.futo.inputmethod.latin.common.Constants
 import org.futo.inputmethod.latin.common.InputPointers
-import org.futo.inputmethod.latin.settings.Settings
 import org.futo.inputmethod.latin.suggestions.SuggestionStripViewAccessor
 import org.futo.inputmethod.latin.uix.FloatingPreEdit
 import org.futo.inputmethod.latin.uix.PreEditListener
@@ -40,7 +37,6 @@ import org.futo.inputmethod.latin.uix.settings.UserSetting
 import org.futo.inputmethod.latin.uix.settings.UserSettingsMenu
 import org.futo.inputmethod.latin.uix.settings.useDataStore
 import org.futo.inputmethod.v2keyboard.KeyboardLayoutSetV2
-import java.util.Locale
 
 /**
  * Settings for the fcitx5 (libime) pinyin engine.
@@ -56,12 +52,6 @@ object Fcitx5PinyinIMESettings {
     val ShowPinyinSetting = SettingsKey(
         booleanPreferencesKey("Fcitx5Pinyin_show_pinyin"),
         true
-    )
-
-    /** Number of candidates shown per page in the suggestion strip. */
-    val PageSizeSetting = SettingsKey(
-        stringPreferencesKey("Fcitx5Pinyin_page_size"),
-        "9"
     )
 
     val menu = UserSettingsMenu(
@@ -109,7 +99,6 @@ class Fcitx5PinyinIME(val helper: IMEHelper) : IMEInterface, SuggestionStripView
     private var engineUnavailable = false
 
     private var rawInput = ""
-    private var layoutHint: String? = null
     private var showPinyin = true
 
     private enum class EditingState(val active: Boolean) {
@@ -359,7 +348,7 @@ class Fcitx5PinyinIME(val helper: IMEHelper) : IMEInterface, SuggestionStripView
     }
 
     override fun onLayoutUpdated(layout: KeyboardLayoutSetV2) {
-        layoutHint = layout.mainLayout.imeHint
+        // The fcitx5 pinyin engine is layout independent; nothing to update here.
     }
 
     override fun onFinishInput() {

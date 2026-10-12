@@ -52,8 +52,8 @@ the stub library is built instead.
 tools/fcitx5/fetch-pinyin-data.sh
 ```
 
-This downloads `sc.dict` and `zh_CN.lm` into `java/assets/fcitx5-pinyin/`. See
-`java/assets/fcitx5-pinyin/README.md`.
+This downloads `sc.dict` and `zh_CN.lm` into `java/assets/fcitx5-pinyin/`. These two files are
+large binaries and are **not** committed to this repository.
 
 ## Licensing
 
