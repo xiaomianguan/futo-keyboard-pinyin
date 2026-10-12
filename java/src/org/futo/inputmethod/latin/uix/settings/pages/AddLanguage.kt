@@ -92,6 +92,17 @@ fun SelectLanguageScreen(navController: NavHostController = rememberNavControlle
             }
         }
 
+        item(key = "fcitx5_pinyin") {
+            NavigationItem(
+                title = stringResource(R.string.subtype_fcitx5_pinyin),
+                style = NavigationItemStyle.MiscNoArrow,
+                navigate = {
+                    Subtypes.addFcitx5PinyinLanguage(context)
+                    navController.popBackStack("languages", inclusive = false)
+                }
+            )
+        }
+
         items(searchKeys) {
             NavigationItem(
                 title = Subtypes.getLocaleDisplayName(it, systemLocale),

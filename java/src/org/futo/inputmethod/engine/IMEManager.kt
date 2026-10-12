@@ -17,8 +17,10 @@ import org.futo.inputmethod.annotations.UsedForTesting
 import org.futo.inputmethod.engine.general.ActionInputTransactionIME
 import org.futo.inputmethod.engine.general.GeneralIME
 import org.futo.inputmethod.engine.general.ChineseIME
+import org.futo.inputmethod.engine.general.Fcitx5PinyinIME
 import org.futo.inputmethod.engine.general.JapaneseIME
 import org.futo.inputmethod.latin.LatinIME
+import org.futo.inputmethod.latin.Subtypes
 import org.futo.inputmethod.latin.settings.Settings
 import org.futo.inputmethod.latin.settings.SettingsValues
 import org.futo.inputmethod.latin.uix.ActionInputTransaction
@@ -48,6 +50,7 @@ private val ImesEverUsedWithDictionaryPersonalization = SettingsKey(
 enum class IMEKind(val factory: (IMEHelper) -> IMEInterface) {
     General({ GeneralIME(it) }),
     Chinese({ ChineseIME(it) }),
+    Fcitx5Pinyin({ Fcitx5PinyinIME(it) }),
     Japanese({ JapaneseIME(it) })
 }
 
@@ -63,7 +66,8 @@ class IMEManager(
 
     private fun getActiveIMEKind(settingsValues: SettingsValues): IMEKind =
         when(settingsValues.mLocale.language) {
-            "zh" -> IMEKind.Chinese
+            "zh" -> if(Subtypes.isFcitx5PinyinActive(service)) IMEKind.Fcitx5Pinyin
+                    else IMEKind.Chinese
             "ja" -> IMEKind.Japanese
             else -> IMEKind.General
         }

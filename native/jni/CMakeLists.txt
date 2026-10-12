@@ -88,3 +88,7 @@ if(NOT EXT_BUILD)
             log
             dl)
 endif()
+# ------------------------------------------------------------------
+# Shared library: libfcitx5pinyin.so (fcitx5 / libime pinyin engine bridge)
+# ------------------------------------------------------------------
+add_subdirectory(fcitx5pinyin)

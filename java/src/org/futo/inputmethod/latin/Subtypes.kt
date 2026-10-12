@@ -209,13 +209,68 @@ object Subtypes {
         context.setSettingBlocking(SubtypesSetting.key, currentSetting + setOf(value))
     }
 
-    fun getName(inputMethodSubtype: InputMethodSubtype): String {
+    /**
+     * Marker values for [Constants.Subtype.ExtraValue.PINYIN_ENGINE].
+     */
+    const val PINYIN_ENGINE_FCITX5 = "fcitx5"
+
+    /**
+     * The locale string used by the fcitx5 pinyin subtype.
+     *
+     * A distinct locale string (rather than plain "zh_CN") is used on purpose so that
+     * the fcitx5 pinyin option forms its own entry in the language list and does not get
+     * merged with the existing Rime based Chinese option. The language is still "zh", so
+     * all of the existing Chinese language handling keeps working unchanged.
+     */
+    const val FCITX5_PINYIN_LOCALE = "zh_Hans_CN"
+
+    /** Returns the value of the [Constants.Subtype.ExtraValue.PINYIN_ENGINE] extra value. */
+    fun getPinyinEngine(subtype: InputMethodSubtype): String? =
+        subtype.getExtraValueOf(Constants.Subtype.ExtraValue.PINYIN_ENGINE)
+
+    /** Whether [subtype] is backed by the fcitx5 pinyin engine. */
+    fun isFcitx5Pinyin(subtype: InputMethodSubtype): Boolean =
+        getPinyinEngine(subtype) == PINYIN_ENGINE_FCITX5
+
+    /** Whether the currently active subtype is backed by the fcitx5 pinyin engine. */
+    fun isFcitx5PinyinActive(context: Context): Boolean =
+        isFcitx5Pinyin(getActiveSubtype(context))
+
+    /** Builds the subtype that enables the fcitx5 pinyin engine on a QWERTY layout. */
+    fun makeFcitx5PinyinSubtype(): InputMethodSubtype =
+        InputMethodSubtypeBuilder()
+            .setSubtypeLocale(FCITX5_PINYIN_LOCALE)
+            .setSubtypeExtraValue(
+                Constants.Subtype.ExtraValue.KEYBOARD_LAYOUT_SET + "=qwerty," +
+                        Constants.Subtype.ExtraValue.PINYIN_ENGINE + "=" + PINYIN_ENGINE_FCITX5
+            )
+            .build()
+
+    /**
+     * Adds (and selects) the "Simplified Chinese (pinyin) [fcitx5]" language option.
+     *
+     * This intentionally only ever touches the fcitx5 subtype; every other language option
+     * is left untouched.
+     */
+    fun addFcitx5PinyinLanguage(context: Context) {
+        val value = subtypeToString(makeFcitx5PinyinSubtype())
+        val currentSetting = context.getSettingBlocking(SubtypesSetting)
+        if(!currentSetting.contains(value)) {
+            context.setSettingBlocking(SubtypesSetting.key, currentSetting + setOf(value))
+        }
+        context.setSettingBlocking(ActiveSubtype.key, value)
+    }
+
+    fun getName(context: Context, inputMethodSubtype: InputMethodSubtype): String {
+        if(isFcitx5Pinyin(inputMethodSubtype)) {
+            return context.getString(R.string.subtype_fcitx5_pinyin)
+        }
         val locale = getLocale(inputMethodSubtype)
         return getLocaleDisplayName(locale, locale)
     }
 
     fun getNameForLocale(locale: String): String {
-        return getName(InputMethodSubtypeBuilder().setSubtypeLocale(locale).build())
+        return getLocaleDisplayName(getLocale(locale), getLocale(locale))
     }
 
     fun getLocale(locale: String): Locale {
@@ -461,7 +516,7 @@ fun LanguageSwitcherDialog(
                         val layoutSetName = subtype.getExtraValueOf(Constants.Subtype.ExtraValue.KEYBOARD_LAYOUT_SET) ?: ""
 
                         val layout = if(inspection) { layoutSetName } else { Subtypes.getLayoutName(context, layoutSetName) }
-                        val title = if(inspection) { subtype.locale } else { Subtypes.getName(subtype) }
+                        val title = if(inspection) { subtype.locale } else { Subtypes.getName(context, subtype) }
 
                         val selected = activeSubtype == Subtypes.subtypeToString(subtype)
 

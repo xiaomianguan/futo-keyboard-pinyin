@@ -652,7 +652,7 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
 
             val locale = Subtypes.getLocale(localeString)
 
-            val name = Subtypes.getName(subtypes.first())
+            val name = Subtypes.getName(context, subtypes.first())
 
             val voiceInputModelName = ResourceHelper.tryFindingVoiceInputModelForLocale(
                 context,
@@ -686,11 +686,21 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                     }
                 }
 
-            val options = LanguageOptions(
-                voiceInputModel = voiceInputModelName,
-                dictionary = dictionaryName,
-                transformerModel = transformerName
-            )
+            // The fcitx5 pinyin option has no dictionary/transformer/voice model resources;
+            // its suggestions come entirely from the bundled fcitx5 (libime) engine.
+            val options = if (Subtypes.isFcitx5Pinyin(subtypes.first())) {
+                LanguageOptions(
+                    voiceInputModel = null,
+                    dictionary = null,
+                    transformerModel = null
+                )
+            } else {
+                LanguageOptions(
+                    voiceInputModel = voiceInputModelName,
+                    dictionary = dictionaryName,
+                    transformerModel = transformerName
+                )
+            }
 
 
             Spacer(modifier = Modifier.height(12.dp))
