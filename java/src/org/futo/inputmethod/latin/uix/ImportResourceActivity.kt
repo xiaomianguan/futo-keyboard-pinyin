@@ -99,7 +99,7 @@ fun getActiveLanguages(context: Context): List<InputLanguage> {
         .map {
         InputLanguage(
             it.value.first().locale,
-            Subtypes.getName(it.value.first()),
+            Subtypes.getName(context, it.value.first()),
             it.value.first()
         )
     }

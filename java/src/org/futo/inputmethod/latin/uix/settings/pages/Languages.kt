@@ -85,7 +85,19 @@ data class LanguageItem(
     val languageName: String,
     val options: LanguageOptions,
     val layouts: List<Pair<InputMethodSubtype, String>>,
-    val inMultilingualBucket: Boolean
+    val inMultilingualBucket: Boolean,
+    /**
+     * Whether to show the importable resources (voice input model, dictionary, transformer)
+     * for this language. Languages backed by a self-contained engine (for example the fcitx5
+     * pinyin option) set this to false.
+     */
+    val showResources: Boolean = true,
+    /**
+     * Whether additional keyboard layouts can be added for this language. Languages whose
+     * input engine is fixed to a single layout (for example the fcitx5 pinyin option) set
+     * this to false.
+     */
+    val canAddLayouts: Boolean = true
 )
 
 @Composable
@@ -241,27 +253,29 @@ fun LanguageSurface(
                     style = Typography.Heading.MediumMl
                 )
 
-                if (item.options.dictionary == null) {
-                    Tip(stringResource(R.string.language_settings_warning_language_has_no_dict))
-                } else {
-                    Spacer(modifier = Modifier.height(32.dp))
-                }
+                if (item.showResources) {
+                    if (item.options.dictionary == null) {
+                        Tip(stringResource(R.string.language_settings_warning_language_has_no_dict))
+                    } else {
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
 
-                LanguageConfigurable(
-                    kind = FileKind.VoiceInput,
-                    selection = item.options.voiceInputModel
-                        ?: stringResource(R.string.language_settings_resource_none)
-                ) { onConfigurableSelected(FileKind.VoiceInput) }
-                LanguageConfigurable(
-                    kind = FileKind.Dictionary,
-                    selection = item.options.dictionary
-                        ?: stringResource(R.string.language_settings_resource_none)
-                ) { onConfigurableSelected(FileKind.Dictionary) }
-                LanguageConfigurable(
-                    kind = FileKind.Transformer,
-                    selection = item.options.transformerModel
-                        ?: stringResource(R.string.language_settings_resource_none)
-                ) { onConfigurableSelected(FileKind.Transformer) }
+                    LanguageConfigurable(
+                        kind = FileKind.VoiceInput,
+                        selection = item.options.voiceInputModel
+                            ?: stringResource(R.string.language_settings_resource_none)
+                    ) { onConfigurableSelected(FileKind.VoiceInput) }
+                    LanguageConfigurable(
+                        kind = FileKind.Dictionary,
+                        selection = item.options.dictionary
+                            ?: stringResource(R.string.language_settings_resource_none)
+                    ) { onConfigurableSelected(FileKind.Dictionary) }
+                    LanguageConfigurable(
+                        kind = FileKind.Transformer,
+                        selection = item.options.transformerModel
+                            ?: stringResource(R.string.language_settings_resource_none)
+                    ) { onConfigurableSelected(FileKind.Transformer) }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -309,16 +323,18 @@ fun LanguageSurface(
                 }
 
 
-                Spacer(modifier = Modifier.height(21.dp))
+                if (item.canAddLayouts) {
+                    Spacer(modifier = Modifier.height(21.dp))
 
-                ActionableItem(
-                    icon = painterResource(id = R.drawable.plus_circle),
-                    text = stringResource(R.string.language_settings_add_layout_for_this_language),
-                    color = MaterialTheme.colorScheme.primary,
-                    onTrigger = onLayoutAdditionRequested
-                )
+                    ActionableItem(
+                        icon = painterResource(id = R.drawable.plus_circle),
+                        text = stringResource(R.string.language_settings_add_layout_for_this_language),
+                        color = MaterialTheme.colorScheme.primary,
+                        onTrigger = onLayoutAdditionRequested
+                    )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
 
                 ActionableItem(
                     icon = painterResource(id = R.drawable.trash),
@@ -652,7 +668,7 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
 
             val locale = Subtypes.getLocale(localeString)
 
-            val name = Subtypes.getName(subtypes.first())
+            val name = Subtypes.getName(context, subtypes.first())
 
             val voiceInputModelName = ResourceHelper.tryFindingVoiceInputModelForLocale(
                 context,
@@ -686,11 +702,21 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                     }
                 }
 
-            val options = LanguageOptions(
-                voiceInputModel = voiceInputModelName,
-                dictionary = dictionaryName,
-                transformerModel = transformerName
-            )
+            // The fcitx5 pinyin option has no dictionary/transformer/voice model resources;
+            // its suggestions come entirely from the bundled fcitx5 (libime) engine.
+            val options = if (Subtypes.isFcitx5Pinyin(subtypes.first())) {
+                LanguageOptions(
+                    voiceInputModel = null,
+                    dictionary = null,
+                    transformerModel = null
+                )
+            } else {
+                LanguageOptions(
+                    voiceInputModel = voiceInputModelName,
+                    dictionary = dictionaryName,
+                    transformerModel = transformerName
+                )
+            }
 
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -705,7 +731,9 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                     },
                     inMultilingualBucket = multilingualBucket.value.contains(
                         localeString
-                    )
+                    ),
+                    showResources = !Subtypes.isFcitx5Pinyin(subtypes.first()),
+                    canAddLayouts = !Subtypes.isFcitx5Pinyin(subtypes.first())
                 ),
                 onLanguageRemoved = {
                     languageDeleteInfo.value = locale

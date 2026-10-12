@@ -337,6 +337,11 @@ android {
             java.srcDirs = ['common/src', 'java/src']
             manifest.srcFile 'java/AndroidManifest.xml'
             assets.srcDirs = ['java/assets']
+            // When building with the fcitx5/libime pinyin engine, package the native
+            // dependency libraries (<root>/lib/<abi>/*.so) alongside libfcitx5pinyin.so.
+            if (project.hasProperty('fcitx5PinyinRoot')) {
+                jniLibs.srcDirs += "${project.property('fcitx5PinyinRoot')}/lib"
+            }
         }
 
         playstore {
@@ -381,6 +386,13 @@ android {
     externalNativeBuild {
         cmake {
             path 'native/jni/CMakeLists.txt'
+            // To build the real fcitx5/libime pinyin engine, pass
+            //   -Pfcitx5PinyinRoot=/path/to/fcitx5-native-deps
+            // (see tools/fcitx5/README.md). Otherwise a stub library is built and the
+            // fcitx5 pinyin engine reports itself as unavailable.
+            if (project.hasProperty('fcitx5PinyinRoot')) {
+                arguments "-DFCITX5_PINYIN_ROOT=${project.property('fcitx5PinyinRoot')}"
+            }
         }
     }
 

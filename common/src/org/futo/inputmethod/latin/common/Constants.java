@@ -122,6 +122,16 @@ public final class Constants {
             public static final String KEYBOARD_LAYOUT_SET = "KeyboardLayoutSet";
 
             /**
+             * The subtype extra value used to select which pinyin engine backs a Chinese
+             * (pinyin) subtype. This extra value is private to FUTO Keyboard.
+             *
+             * When set to {@code "fcitx5"} the subtype is handled by the fcitx5/libime pinyin
+             * engine instead of the default Rime based Chinese IME. Subtypes without this extra
+             * value keep their existing behavior.
+             */
+            public static final String PINYIN_ENGINE = "PinyinEngine";
+
+            /**
              * The subtype extra value used to indicate that this subtype is an additional subtype
              * that the user defined. This extra value is private to LatinIME.
              */

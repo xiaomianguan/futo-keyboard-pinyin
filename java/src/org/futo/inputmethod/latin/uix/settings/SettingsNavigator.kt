@@ -111,7 +111,7 @@ val SettingsMenus = listOf(
     MiscMenu,
     CreditsScreenLite,
     IMESettingsMenu
-) + AllActions.mapNotNull { it.settingsMenu } + SettingsByLanguage.values
+) + AllActions.mapNotNull { it.settingsMenu } + SettingsByLanguage
 
 
 // Improves the semantics so that we don't have to deal with NavBackStackEntry when we don't need it
