@@ -68,7 +68,7 @@ class Fcitx5Pinyin(
 
     private external fun nativeSave(handle: Long)
 
-    private val handle: Long
+    private var handle: Long = 0L
 
     init {
         if (!isAvailable) {
@@ -155,7 +155,10 @@ class Fcitx5Pinyin(
     }
 
     fun close() {
-        if (handle != 0L) nativeDestroy(handle)
+        if (handle != 0L) {
+            nativeDestroy(handle)
+            handle = 0L
+        }
     }
 
     companion object {

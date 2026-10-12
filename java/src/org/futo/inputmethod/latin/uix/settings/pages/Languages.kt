@@ -91,7 +91,13 @@ data class LanguageItem(
      * for this language. Languages backed by a self-contained engine (for example the fcitx5
      * pinyin option) set this to false.
      */
-    val showResources: Boolean = true
+    val showResources: Boolean = true,
+    /**
+     * Whether additional keyboard layouts can be added for this language. Languages whose
+     * input engine is fixed to a single layout (for example the fcitx5 pinyin option) set
+     * this to false.
+     */
+    val canAddLayouts: Boolean = true
 )
 
 @Composable
@@ -317,16 +323,18 @@ fun LanguageSurface(
                 }
 
 
-                Spacer(modifier = Modifier.height(21.dp))
+                if (item.canAddLayouts) {
+                    Spacer(modifier = Modifier.height(21.dp))
 
-                ActionableItem(
-                    icon = painterResource(id = R.drawable.plus_circle),
-                    text = stringResource(R.string.language_settings_add_layout_for_this_language),
-                    color = MaterialTheme.colorScheme.primary,
-                    onTrigger = onLayoutAdditionRequested
-                )
+                    ActionableItem(
+                        icon = painterResource(id = R.drawable.plus_circle),
+                        text = stringResource(R.string.language_settings_add_layout_for_this_language),
+                        color = MaterialTheme.colorScheme.primary,
+                        onTrigger = onLayoutAdditionRequested
+                    )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
 
                 ActionableItem(
                     icon = painterResource(id = R.drawable.trash),
@@ -724,7 +732,8 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                     inMultilingualBucket = multilingualBucket.value.contains(
                         localeString
                     ),
-                    showResources = !Subtypes.isFcitx5Pinyin(subtypes.first())
+                    showResources = !Subtypes.isFcitx5Pinyin(subtypes.first()),
+                    canAddLayouts = !Subtypes.isFcitx5Pinyin(subtypes.first())
                 ),
                 onLanguageRemoved = {
                     languageDeleteInfo.value = locale

@@ -31,7 +31,6 @@ import org.futo.inputmethod.latin.uix.PreEditListener
 import org.futo.inputmethod.latin.uix.SettingsKey
 import org.futo.inputmethod.latin.uix.getSetting
 import org.futo.inputmethod.latin.uix.getSettingBlocking
-import org.futo.inputmethod.latin.uix.setSetting
 import org.futo.inputmethod.latin.uix.settings.SettingToggleRaw
 import org.futo.inputmethod.latin.uix.settings.UserSetting
 import org.futo.inputmethod.latin.uix.settings.UserSettingsMenu
@@ -247,6 +246,11 @@ class Fcitx5PinyinIME(val helper: IMEHelper) : IMEInterface, SuggestionStripView
                 if(!commitComposition()) commitChar(codePoint)
             }
 
+            c == '\n' || c == '\r' -> {
+                commitComposition()
+                sendDownUpKeyEvent(KeyEvent.KEYCODE_ENTER, 0)
+            }
+
             c in '1'..'9' -> {
                 if(!(rawInput.isNotEmpty() && selectCandidate(c - '1'))) {
                     commitChar(codePoint)
@@ -300,10 +304,9 @@ class Fcitx5PinyinIME(val helper: IMEHelper) : IMEInterface, SuggestionStripView
                 when {
                     event.mKeyCode == Constants.CODE_DELETE -> handleBackspace()
                     event.mKeyCode == Event.NOT_A_KEY_CODE -> handleCodePoint(event.mCodePoint)
-                    else -> {
-                        interruptInput()
-                        sendDownUpKeyEvent(event.mKeyCode, 0)
-                    }
+                    // Special keys (shift, symbol, emoji, action keys, ...) are handled by
+                    // the keyboard state machine, not by the pinyin engine.
+                    else -> return
                 }
             }
 

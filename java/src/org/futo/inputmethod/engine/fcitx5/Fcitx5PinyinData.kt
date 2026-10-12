@@ -35,7 +35,11 @@ object Fcitx5PinyinData {
         destDir.mkdirs()
 
         val versionFile = File(destDir, VERSION_FILE)
-        if(versionFile.exists() && versionFile.readText() == assetVersion(context)) {
+        val alreadyExtracted = versionFile.exists() &&
+                versionFile.readText() == assetVersion(context) &&
+                File(destDir, Fcitx5Pinyin.SYSTEM_DICT_NAME).exists() &&
+                File(destDir, Fcitx5Pinyin.LANGUAGE_MODEL_NAME).exists()
+        if(alreadyExtracted) {
             return true
         }
 
